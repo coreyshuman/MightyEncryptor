@@ -25,11 +25,19 @@ namespace FileEncryption
             }
         }
 
+        /// <summary>
+        /// Attach debugging instance to the given form.
+        /// </summary>
+        /// <param name="f1"></param>
         public void SetForm(Form1 f1)
         {
             form = f1;
         }
 
+        /// <summary>
+        /// Write a line of text to the form's console area.
+        /// </summary>
+        /// <param name="line"></param>
         public void WriteLine(string line)
         {
             form?.AddDebugLine(line);

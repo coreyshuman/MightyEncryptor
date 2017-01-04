@@ -1,0 +1,24 @@
+Mighty Encryptor
+File Format
+
+Header
+v1.0
+
+<folder section, for each folder>
+  [ 2 bytes ][  variable length, defined by prev 2 bytes  ]
+  |path size||  relative path of folder			     	  |
+  ...
+<end folder section>
+  [ 0x0000 ]
+<file section, for each folder>
+  [ 2 bytes ][  variable length, defined by prev 2 bytes  ][ 4 bytes ]
+  |path size||  relative path of file			     	  ||file size|
+  ...
+<end file section>
+
+File Package
+v1.0
+<for each file>
+  [ variable length, defined by file size in header ]
+  |   file content (compressed)                     |
+<end section>

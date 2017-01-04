@@ -24,6 +24,12 @@ namespace FileEncryption
             
         }
 
+        /// <summary>
+        /// Generate header section of the block file.
+        /// </summary>
+        /// <param name="folders"></param>
+        /// <param name="files"></param>
+        /// <returns></returns>
         public Stream GenerateHeader(IEnumerable<string> folders, IEnumerable<FileHeader> files)
         {
             MemoryStream headerStream = new MemoryStream(1024);
@@ -71,6 +77,12 @@ namespace FileEncryption
             return headerStream;
         }
 
+        /// <summary>
+        /// Decode the header section of an unencrypted block file an populate the folders and files lists.
+        /// </summary>
+        /// <param name="dataStream">Data stream of unencrypted block file.</param>
+        /// <param name="folders"></param>
+        /// <param name="files"></param>
         private void DecodeHeader(Stream dataStream, IList<string> folders, IList<FileHeader> files)
         {
             int res;
@@ -171,6 +183,12 @@ namespace FileEncryption
             }
         }
 
+        /// <summary>
+        /// Combines file content of listed files into a single data stream. Files are compressed individually using GZip compression.
+        /// </summary>
+        /// <param name="folders"></param>
+        /// <param name="files"></param>
+        /// <returns></returns>
         private Stream PackageFiles(IEnumerable<string> folders, IEnumerable<FileHeader> files)
         {
             FileStream curFileStream = null;
@@ -221,6 +239,13 @@ namespace FileEncryption
             return dataStream;
         }
 
+        /// <summary>
+        /// Process folders and files, creates block file header and file package, and encrypts data stream.
+        /// </summary>
+        /// <param name="folders"></param>
+        /// <param name="files"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
         public Stream Encrypt(IEnumerable<string> folders, IEnumerable<FileHeader> files, string password)
         {
             MemoryStream dataStream = new MemoryStream();
@@ -269,7 +294,14 @@ namespace FileEncryption
         }
 
         
-
+        /// <summary>
+        /// Decrpyts file stream using password and parses header block to determine file list.
+        /// </summary>
+        /// <param name="blockStream"></param>
+        /// <param name="folders"></param>
+        /// <param name="files"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
         public Stream Decrypt(Stream blockStream, IList<string> folders, IList<FileHeader> files, string password)
         {
             MemoryStream decryptedStream = new MemoryStream();

@@ -16,6 +16,8 @@ namespace FileEncryption
  
         }
 
+        /// <summary>Process all file and folder strings in args and populate folders and files lists.
+        /// </summary>
         public void ProcessPaths(string[] args, IList<string> folders, IList<FileHeader> files)
         {
             string currentFolder = "";
@@ -43,8 +45,9 @@ namespace FileEncryption
         }
 
 
-        // Process all files in the directory passed in, recurse on any directories 
-        // that are found, and process the files they contain.
+        /// <summary>Process all files in the directory passed in, recurse in on any directories 
+        /// that are found, and process the files they contain.
+        /// </summary>
         private void ProcessDirectory(string targetDirectory, string topDirectory, IList<string> folders, IList<FileHeader> files)
         {
             folders.Add(GetRelativePath(targetDirectory, topDirectory));
@@ -59,24 +62,35 @@ namespace FileEncryption
                 ProcessDirectory(subdirectory, topDirectory, folders, files);
         }
 
-        // Insert logic for processing found files here.
+        /// <summary>
+        /// Process file in 'path' and populate into 'files' list. File path is relative to 'topDirectory'.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="topDirectory"></param>
+        /// <param name="files"></param>
         private void ProcessFile(string path, string topDirectory, IList<FileHeader> files)
         {
             ulong size = (ulong)new FileInfo(path).Length;
             files.Add(new FileHeader { fullPath = path, filename = GetRelativePath(path, topDirectory), filesize = size });
         }
 
-        private string GetRelativePath(string path, string currentFolder)
+        /// <summary>
+        /// Processes full path in 'fullPath' and returns relative path based on 'currentFolder'.
+        /// </summary>
+        /// <param name="fullPath"></param>
+        /// <param name="currentFolder"></param>
+        /// <returns></returns>
+        private string GetRelativePath(string fullPath, string currentFolder)
         {
             // use the correct seperator for the environment
-            var pathParts = path.Split(Path.DirectorySeparatorChar);
+            var pathParts = fullPath.Split(Path.DirectorySeparatorChar);
 
             int startAfter = Array.IndexOf(pathParts, currentFolder);
 
             if (startAfter == -1)
             {
                 // path not found
-                return path;
+                return fullPath;
             }
 
             return string.Join(
@@ -85,11 +99,22 @@ namespace FileEncryption
                 pathParts.Length - startAfter);
         }
 
+        /// <summary>
+        /// Appends relative path in 'path' to 'currentFolder'.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="currentFolder"></param>
+        /// <returns></returns>
         private string GetFullPath(string path, string currentFolder)
         {
             return currentFolder + Path.DirectorySeparatorChar.ToString() + path;
         }
 
+        /// <summary>
+        /// Creates directories in 'folders' list at 'outputLocation'.
+        /// </summary>
+        /// <param name="outputLocation"></param>
+        /// <param name="folders"></param>
         public void CreateFolders(string outputLocation, IEnumerable<string> folders)
         {
             foreach(var folder in folders)
@@ -98,6 +123,12 @@ namespace FileEncryption
             }
         }
 
+        /// <summary>
+        /// Creates files in 'files' list using data from 'dataStream' at 'outputLocation'.
+        /// </summary>
+        /// <param name="outputLocation"></param>
+        /// <param name="dataStream"></param>
+        /// <param name="files"></param>
         public void CreateFiles(string outputLocation, Stream dataStream, IEnumerable<FileHeader> files)
         {
             byte[] buffer = new byte[0xFFFF];
@@ -136,6 +167,11 @@ namespace FileEncryption
             }
         }
 
+        /// <summary>
+        /// Save data in 'dataStream' to new file created at 'filePath'.
+        /// </summary>
+        /// <param name="dataStream"></param>
+        /// <param name="filePath"></param>
         public void SaveFile(Stream dataStream, string filePath)
         {
             using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
@@ -145,6 +181,12 @@ namespace FileEncryption
             }
         }
 
+        /// <summary>
+        /// Read file at 'fileStream' into 'dataStream' using GZip compression.
+        /// </summary>
+        /// <param name="dataStream"></param>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public ulong GetFile(Stream dataStream, string filePath)
         {
             ulong fileSize = (ulong)dataStream.Position;
