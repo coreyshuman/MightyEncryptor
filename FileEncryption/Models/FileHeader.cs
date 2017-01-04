@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 
 namespace FileEncryption.Models
 {
-    public class FileHeader
+    [Serializable]
+    public class FileHeaderV01
     {
         public ulong filesize { get; set; }
         public string filename { get; set; } // shortened path and filename
         public string fullPath { get; set; } // full path to file
+
+        public FileHeaderV01() { }
     }
 }

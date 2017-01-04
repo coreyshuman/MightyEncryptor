@@ -12,6 +12,8 @@ using System.Windows.Forms;
 using FileEncryption.Models;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace FileEncryption
 {
@@ -69,29 +71,7 @@ namespace FileEncryption
         {
             try
             {
-                byte[] original = Encoding.ASCII.GetBytes("Here is some data to encrypt!");
-
-                MemoryStream file = new MemoryStream(original);
-                MemoryStream encryptStream = new MemoryStream();
-                MemoryStream decryptStream = new MemoryStream();
-
-                // Create a new instance of the Aes
-                // class.  This generates a new key and initialization 
-                // vector (IV).
-                using (Aes myAes = Aes.Create())
-                {
-                    // Encrypt the string to an array of bytes.
-                    AddDebugLine("Encrypting...");
-                    //EncryptAES(encryptStream, file, myAes.Key, myAes.IV);
-
-                    // Decrypt the bytes to a string.
-                    AddDebugLine("Decrypting...");
-                    //DecryptAES(decryptStream, new MemoryStream(encryptStream.ToArray()), myAes.Key, myAes.IV);
-
-                    //Display the original data and the decrypted data.
-                    AddDebugLine("Original:   " + Encoding.UTF8.GetString(original));
-                    AddDebugLine("Round Trip: " + Encoding.UTF8.GetString(decryptStream.ToArray()));
-                }
+                
             }
             catch (Exception e)
             {
@@ -226,7 +206,7 @@ namespace FileEncryption
         private void DecryptBlockFile(string filePath, string saveFilePath, string password)
         {
             List<string> folders = new List<string>();
-            List<FileHeader> files = new List<FileHeader>();
+            List<FileHeaderV01> files = new List<FileHeaderV01>();
             // open block file
             FileStream blockFileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
             // decrypt file
@@ -242,7 +222,7 @@ namespace FileEncryption
         private void EncryptBlockFile(string[] paths, string saveFilePath, string password)
         {
             List<string> folders = new List<string>();
-            List<FileHeader> files = new List<FileHeader>();
+            List<FileHeaderV01> files = new List<FileHeaderV01>();
 
             AddDebugLine("Processing files...");
             dirProc.ProcessPaths(paths, folders, files);
@@ -268,7 +248,10 @@ namespace FileEncryption
             blockData.Dispose();
         }
 
-        
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Test();
+        }
     }
 
 }

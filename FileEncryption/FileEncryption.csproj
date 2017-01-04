@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AES.cs" />
+    <Compile Include="BlockFileProcessor.cs" />
     <Compile Include="Debugging.cs" />
     <Compile Include="DirectoryProcessor.cs" />
     <Compile Include="EncryptionEngine.cs" />
@@ -62,6 +63,8 @@
     <Compile Include="GetPasswordForm.Designer.cs">
       <DependentUpon>GetPasswordForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Models\FolderHeader.cs" />
+    <Compile Include="Models\HeaderDefinition.cs" />
     <Compile Include="StreamExtensions.cs" />
     <Compile Include="Models\FileHeader.cs" />
     <Compile Include="Program.cs" />

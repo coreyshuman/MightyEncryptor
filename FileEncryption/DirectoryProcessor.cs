@@ -18,7 +18,7 @@ namespace FileEncryption
 
         /// <summary>Process all file and folder strings in args and populate folders and files lists.
         /// </summary>
-        public void ProcessPaths(string[] args, IList<string> folders, IList<FileHeader> files)
+        public void ProcessPaths(string[] args, IList<string> folders, IList<FileHeaderV01> files)
         {
             string currentFolder = "";
             foreach (string path in args)
@@ -48,7 +48,7 @@ namespace FileEncryption
         /// <summary>Process all files in the directory passed in, recurse in on any directories 
         /// that are found, and process the files they contain.
         /// </summary>
-        private void ProcessDirectory(string targetDirectory, string topDirectory, IList<string> folders, IList<FileHeader> files)
+        private void ProcessDirectory(string targetDirectory, string topDirectory, IList<string> folders, IList<FileHeaderV01> files)
         {
             folders.Add(GetRelativePath(targetDirectory, topDirectory));
             // Process the list of files found in the directory.
@@ -68,10 +68,10 @@ namespace FileEncryption
         /// <param name="path"></param>
         /// <param name="topDirectory"></param>
         /// <param name="files"></param>
-        private void ProcessFile(string path, string topDirectory, IList<FileHeader> files)
+        private void ProcessFile(string path, string topDirectory, IList<FileHeaderV01> files)
         {
             ulong size = (ulong)new FileInfo(path).Length;
-            files.Add(new FileHeader { fullPath = path, filename = GetRelativePath(path, topDirectory), filesize = size });
+            files.Add(new FileHeaderV01 { fullPath = path, filename = GetRelativePath(path, topDirectory), filesize = size });
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace FileEncryption
         /// <param name="outputLocation"></param>
         /// <param name="dataStream"></param>
         /// <param name="files"></param>
-        public void CreateFiles(string outputLocation, Stream dataStream, IEnumerable<FileHeader> files)
+        public void CreateFiles(string outputLocation, Stream dataStream, IEnumerable<FileHeaderV01> files)
         {
             byte[] buffer = new byte[0xFFFF];
             ulong remainingBytes = 0;
