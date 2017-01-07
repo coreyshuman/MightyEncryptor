@@ -8,21 +8,19 @@ using System.Threading.Tasks;
 
 namespace FileEncryption
 {
-    public class AES
+    public static class AES
     {
         const int KeySize = 256;
         const int BlockSize = 128;
         const int Iterations = 10000;
 
-        public byte[] Encrypt(Stream file, string password)
+        public static byte[] Encrypt(Stream file, string password)
         {
             byte[] dataOut;
             // Check arguments.
             if (file == null || !file.CanRead)
                 throw new ArgumentNullException("File");
 
-            // Create an Aes object
-            // with the specified key and IV.
             using (Aes aes = Aes.Create())
             {
                 aes.KeySize = KeySize;
@@ -50,7 +48,7 @@ namespace FileEncryption
                         file.Position = 0;
                         file.CopyTo(csEncrypt);
                         csEncrypt.FlushFinalBlock();
-                        
+
                     }
                     dataOut = encryptStream.ToArray();
                 }
@@ -58,11 +56,8 @@ namespace FileEncryption
             return dataOut;
         }
 
-        public void Decrypt(Stream decryptStream, Stream cipherText, string password)
+        public static void Decrypt(Stream decryptStream, Stream cipherText, string password)
         {
-
-            // Create an Aes object
-            // with the specified key and IV.
             using (Aes aes = Aes.Create())
             {
                 aes.KeySize = KeySize;
@@ -89,6 +84,24 @@ namespace FileEncryption
                         decryptStream.Write(buffer, 0, bytesRead);
 
                 }
+            }
+        }
+
+        /// <summary>
+        /// Generate random salt bytes. Length is determined by BlockSize.
+        /// </summary>
+        /// <returns></returns>
+        public static byte[] GenerateSalt()
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.KeySize = KeySize;
+                aes.BlockSize = BlockSize;
+
+                aes.GenerateIV();
+                byte[] salt = new byte[aes.BlockSize / 8];
+                Buffer.BlockCopy(aes.IV, 0, salt, 0, salt.Length);
+                return salt;
             }
         }
     }

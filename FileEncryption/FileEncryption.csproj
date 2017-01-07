@@ -63,6 +63,7 @@
     <Compile Include="GetPasswordForm.Designer.cs">
       <DependentUpon>GetPasswordForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="HMAC.cs" />
     <Compile Include="Models\FolderHeader.cs" />
     <Compile Include="Models\HeaderDefinition.cs" />
     <Compile Include="StreamExtensions.cs" />

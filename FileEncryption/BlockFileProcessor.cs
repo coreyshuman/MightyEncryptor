@@ -31,23 +31,17 @@ namespace FileEncryption
             UInt16 version;
             dataStream.Position = 0;
             byte[] buffer = new byte[4];
+            byte[] hmacKey;
 
             // verify header tag
             res = dataStream.Read(buffer, 0, 4);
-            if (res != 1)
+            if (res != 4)
             {
                 throw new Exception("Unexpected EOF");
             }
-
             if(buffer[0] != 'M' || buffer[1] != 'E' || buffer[2] != 'B' || buffer[3] != 'F')
             {
                 throw new Exception("Invalid file.");
-            }
-
-            res = dataStream.Read(buffer, 0, 1);
-            if (res != 1)
-            {
-                throw new Exception("Unexpected EOF");
             }
 
             // get file version
@@ -72,7 +66,7 @@ namespace FileEncryption
             switch (version)
             {
                 case 1:
-                    DecodeHeaderV01(dataStream, folders, files);
+                    hmacKey = DecodeHeaderV01(dataStream, folders, files);
                     break;
             }
         }
@@ -83,7 +77,7 @@ namespace FileEncryption
         /// <param name="folders"></param>
         /// <param name="files"></param>
         /// <returns></returns>
-        public Stream GenerateHeader(IEnumerable<string> folders, IEnumerable<FileHeaderV01> files)
+        public Stream GenerateHeader(IEnumerable<string> folders, IEnumerable<FileHeaderV01> files, byte[] hmacKey)
         {
             MemoryStream headerStream = new MemoryStream(1024);
             try
@@ -92,7 +86,14 @@ namespace FileEncryption
 
                 // write header tag and version number
                 headerStream.Write(Encoding.ASCII.GetBytes("MEBF"), 0, 4);
-                headerStream.Write(BitConverter.GetBytes(MaxBlockVersion), 0, 2);
+                byte[] version = BitConverter.GetBytes(MaxBlockVersion);
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(version);
+                headerStream.Write(version, 0, 2);
+                // write hmac salt
+                if (hmacKey == null || hmacKey.Length != 8)
+                    throw new Exception("Invalid HMAC Key length");
+                headerStream.Write(hmacKey, 0, 8);
 
                 foreach (var folder in folders)
                 {
@@ -141,11 +142,19 @@ namespace FileEncryption
         /// <param name="dataStream">Data stream of unencrypted block file.</param>
         /// <param name="folders"></param>
         /// <param name="files"></param>
-        private void DecodeHeaderV01(Stream dataStream, IList<string> folders, IList<FileHeaderV01> files)
+        /// <returns>hmac key</returns>
+        private byte[] DecodeHeaderV01(Stream dataStream, IList<string> folders, IList<FileHeaderV01> files)
         {
             int res;
             byte[] buffer = new byte[0xFFFF];
-            
+            byte[] hmacKey = new byte[8];
+
+            // Get HMAC key
+            res = dataStream.Read(hmacKey, 0, 8);
+            if (res != 8)
+            {
+                throw new Exception("Unexpected EOF");
+            }
 
             // loop through folders
             while (true)
@@ -238,6 +247,7 @@ namespace FileEncryption
                 // save file info
                 files.Add(file);
             }
+            return hmacKey;
         }
         #endregion
 
@@ -247,7 +257,7 @@ namespace FileEncryption
         /// <param name="folders"></param>
         /// <param name="files"></param>
         /// <returns>Stream</returns>
-        public Stream PackageFiles(IEnumerable<string> folders, IEnumerable<Models.FileHeaderV01> files)
+        public Stream PackageFiles(IEnumerable<string> folders, IEnumerable<Models.FileHeaderV01> files, byte[] hmacKey)
         {
             FileStream curFileStream = null;
             MemoryStream dataStream = new MemoryStream();
@@ -282,6 +292,8 @@ namespace FileEncryption
                     fileSize = directoryProcessor.GetFile(dataStream, file.fullPath);
                     file.filesize = fileSize;
                 }
+                // calculate hmac
+
             }
             catch (Exception e)
             {

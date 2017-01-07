@@ -14,14 +14,12 @@ namespace FileEncryption
         private Debugging debug { get; set; }
         private DirectoryProcessor dirProc { get; set; }
         private BlockFileProcessor blockFileProcessor { get; set; }
-        private AES aes { get; set; }
 
         public EncryptionEngine()
         {
             debug = Debugging.Instance;
             dirProc = new DirectoryProcessor();
             blockFileProcessor = new BlockFileProcessor(dirProc);
-            aes = new AES();
         }
 
         
@@ -42,11 +40,12 @@ namespace FileEncryption
             try
             {
                 debug.WriteLine("Beginning Encryption Engine...");
+                byte[] hmacKey = AES.GenerateSalt();
                 // package files first to generate compressed file sizes
                 debug.WriteLine("Packaging Files.");
-                packageStream = blockFileProcessor.PackageFiles(folders, files);
+                packageStream = blockFileProcessor.PackageFiles(folders, files, hmacKey);
                 debug.WriteLine("Generating Header.");
-                headerStream = blockFileProcessor.GenerateHeader(folders, files);
+                headerStream = blockFileProcessor.GenerateHeader(folders, files, hmacKey);
 
                 // combine streams
                 dataStream.Capacity = (int)(headerStream.Length + packageStream.Length);
@@ -58,7 +57,7 @@ namespace FileEncryption
                 headerStream = null;
                 packageStream.Dispose();
                 packageStream = null;
-                byte[] encryptedData = aes.Encrypt(dataStream, password);
+                byte[] encryptedData = AES.Encrypt(dataStream, password);
                 encryptedStream = new MemoryStream(encryptedData);
             }
             catch(Exception e)
@@ -96,7 +95,7 @@ namespace FileEncryption
             {
                 debug.WriteLine("Beginning Decryption Engine...");
                 debug.WriteLine("Decrypting.");
-                aes.Decrypt(decryptedStream, blockStream, password);
+                AES.Decrypt(decryptedStream, blockStream, password);
                 debug.WriteLine("Decode Header.");
                 blockFileProcessor.DecodeHeader(decryptedStream, folders, files);
             }
