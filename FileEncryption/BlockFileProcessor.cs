@@ -8,10 +8,13 @@ using System.Threading.Tasks;
 
 namespace FileEncryption
 {
+    /// <summary>
+    /// Handle encoding and decoding of file package header and file package block.
+    /// </summary>
     class BlockFileProcessor
     {
-        const UInt16 MaxBlockVersion = 1;
-
+        public const UInt16 MaxBlockVersion = 1;
+        private readonly byte[] HeaderTag = new byte[]{ 0x03, 0x29, 0x5D, 0x47 };
         private DirectoryProcessor directoryProcessor { get; set; }
 
         public BlockFileProcessor(DirectoryProcessor dp)
@@ -39,9 +42,9 @@ namespace FileEncryption
             {
                 throw new Exception("Unexpected EOF");
             }
-            if(buffer[0] != 'M' || buffer[1] != 'E' || buffer[2] != 'B' || buffer[3] != 'F')
+            if(buffer[0] != HeaderTag[0] || buffer[1] != HeaderTag[1] || buffer[2] != HeaderTag[2] || buffer[3] != HeaderTag[3])
             {
-                throw new Exception("Invalid file.");
+                throw new Exception("Invalid block file header.");
             }
 
             // get file version
@@ -85,15 +88,15 @@ namespace FileEncryption
                 headerStream.SetLength(0);
 
                 // write header tag and version number
-                headerStream.Write(Encoding.ASCII.GetBytes("MEBF"), 0, 4);
+                headerStream.Write(HeaderTag, 0, 4);  // header tag, 4 bytes
                 byte[] version = BitConverter.GetBytes(MaxBlockVersion);
                 if (BitConverter.IsLittleEndian)
                     Array.Reverse(version);
-                headerStream.Write(version, 0, 2);
+                headerStream.Write(version, 0, 2);                          // version number, 2 bytes
                 // write hmac salt
                 if (hmacKey == null || hmacKey.Length != 8)
                     throw new Exception("Invalid HMAC Key length");
-                headerStream.Write(hmacKey, 0, 8);
+                headerStream.Write(hmacKey, 0, 8);                          // hmack salt, 8 bytes
 
                 foreach (var folder in folders)
                 {

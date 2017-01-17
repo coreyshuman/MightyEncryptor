@@ -9,8 +9,13 @@ using System.IO.Compression;
 
 namespace FileEncryption
 {
+    /// <summary>
+    /// Main controller for encoding and decoding encrypted ME files.
+    /// </summary>
     class EncryptionEngine
     {
+        public const UInt16 MaxEEVersion = 1;
+
         private Debugging debug { get; set; }
         private DirectoryProcessor dirProc { get; set; }
         private BlockFileProcessor blockFileProcessor { get; set; }
@@ -25,7 +30,7 @@ namespace FileEncryption
         
 
         /// <summary>
-        /// Process folders and files, creates block file header and file package, and encrypts data stream.
+        /// Process folders and files using compression, creates block file header and file package, and encrypts data stream.
         /// </summary>
         /// <param name="folders"></param>
         /// <param name="files"></param>
@@ -58,7 +63,17 @@ namespace FileEncryption
                 packageStream.Dispose();
                 packageStream = null;
                 byte[] encryptedData = AES.Encrypt(dataStream, password);
-                encryptedStream = new MemoryStream(encryptedData);
+                //encryptedStream = new MemoryStream(encryptedData);
+                encryptedStream = new MemoryStream(encryptedData.Length + 32);
+                // write header tag
+                encryptedStream.Write(Encoding.ASCII.GetBytes("MEBF"), 0, 4);
+                // write version number
+                byte[] version = BitConverter.GetBytes(MaxEEVersion);
+                if (BitConverter.IsLittleEndian)
+                    Array.Reverse(version);
+                headerStream.Write(version, 0, 2);
+                // append encrypted string (containing salt and verification code)
+                headerStream.Write(encryptedData, 0, encryptedData.Length);
             }
             catch(Exception e)
             {

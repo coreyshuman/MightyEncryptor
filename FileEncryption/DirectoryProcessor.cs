@@ -9,6 +9,9 @@ using System.IO.Compression;
 
 namespace FileEncryption
 {
+    /// <summary>
+    /// Manage reading and writing of files and folders.
+    /// </summary>
     public class DirectoryProcessor
     {
         public DirectoryProcessor()
@@ -16,8 +19,12 @@ namespace FileEncryption
  
         }
 
-        /// <summary>Process all file and folder strings in args and populate folders and files lists.
+        /// <summary>
+        /// Process all file and folder strings in args and populate folders and files lists.
         /// </summary>
+        /// <param name="args"></param>
+        /// <param name="folders"></param>
+        /// <param name="files"></param>
         public void ProcessPaths(string[] args, IList<string> folders, IList<FileHeaderV01> files)
         {
             string currentFolder = "";
@@ -45,9 +52,14 @@ namespace FileEncryption
         }
 
 
-        /// <summary>Process all files in the directory passed in, recurse in on any directories 
+        /// <summary>
+        /// Process all files in the directory passed in, recurse in on any directories 
         /// that are found, and process the files they contain.
         /// </summary>
+        /// <param name="targetDirectory"></param>
+        /// <param name="topDirectory"></param>
+        /// <param name="folders"></param>
+        /// <param name="files"></param>
         private void ProcessDirectory(string targetDirectory, string topDirectory, IList<string> folders, IList<FileHeaderV01> files)
         {
             folders.Add(GetRelativePath(targetDirectory, topDirectory));
